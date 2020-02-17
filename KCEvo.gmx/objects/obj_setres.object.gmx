@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<object>
+  <spriteName>&lt;undefined&gt;</spriteName>
+  <solid>0</solid>
+  <visible>-1</visible>
+  <depth>0</depth>
+  <persistent>0</persistent>
+  <maskName>&lt;undefined&gt;</maskName>
+  <parentName>&lt;undefined&gt;</parentName>
+  <events>
+    <event enumb="0" eventtype="0">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <useapplyto>-1</useapplyto>
+        <isquestion>0</isquestion>
+        <exetype>2</exetype>
+        <functionname/>
+        <codestring/>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>//Workaround, if not using Enigma language&#13;
+&#13;
+//Strangely, in GM8, the 'Create' event happens before 'Game Start'.&#13;
+//Create is called every room restart, but Game Start happens once&#13;
+//This create event doesn't have access to game start variables when it's run for the first time&#13;
+//But after that, it works normally.&#13;
+//So, we trigger the game start event here, only once. To initialize variables&#13;
+&#13;
+//Comment out if using Enigma's EDL language&#13;
+//Uncomment if using GML&#13;
+//if !(variable_global_exists('gstart')){event_perform(ev_other,ev_game_start);}&#13;
+&#13;
+//Prepare new window size&#13;
+room_set_width(rm_main,global.wnwid);&#13;
+room_set_height(rm_main,global.wnhgt);&#13;
+&#13;
+//Check if iusing GameMaker 8 - 8.1&#13;
+if (gamemaker_version &gt;= 800) and (gamemaker_version &lt;= 819)&#13;
+{&#13;
+    //If true, use a workaround to ensure obj_setres' game_start event runs before main tries to access it's global variables&#13;
+    //(Simply delay the room change 1 step)&#13;
+    alarm[0] = 1;&#13;
+}&#13;
+else&#13;
+{&#13;
+    room_goto(rm_main);&#13;
+}</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event enumb="0" eventtype="2">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <useapplyto>-1</useapplyto>
+        <isquestion>0</isquestion>
+        <exetype>2</exetype>
+        <functionname/>
+        <codestring/>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>//Go to the main room, where everything happens. Room change needed to allow quality window resize&#13;
+room_goto(rm_main);</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event enumb="2" eventtype="7">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <useapplyto>-1</useapplyto>
+        <isquestion>0</isquestion>
+        <exetype>2</exetype>
+        <functionname/>
+        <codestring/>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>//Set all these variables only once&#13;
+//To allow window resizing, we go to room 'setres' and then adjust rm_main's size&#13;
+//Changing room sizes needs a room restart.&#13;
+//Room restarts reset all variables except for globals&#13;
+//Sprites are created in global variables to maintain the graphics&#13;
+//ds_lists maintain map memory&#13;
+&#13;
+//Enigma doesn't have this variable. GM has it as read-only&#13;
+gamemaker_version = 0;&#13;
+global.gstart = 1;&#13;
+//Initial window size&#13;
+global.wnwid = divz(display_get_width(),4)*2;&#13;
+global.wnhgt = divz(display_get_height(),3)*2;&#13;
+global.file = "";//parameter_string(1);&#13;
+&#13;
+//Persistent map data&#13;
+global.kcm = ds_list_create();&#13;
+global.level = ds_grid_create(1,1);&#13;
+global.spr_tile = spr_none;&#13;
+global.spr_lvl = 0;&#13;
+global.sstr = "";//If map has been changed, this should equal "*"&#13;
+&#13;
+//Map variables&#13;
+global.mx = 0;&#13;
+global.my = 0;&#13;
+global.scr = 0;&#13;
+global.x1 = 0;&#13;
+global.y1 = 0;&#13;
+global.thmf = 0;&#13;
+global.thmb = 0;&#13;
+global.kidx = 0;&#13;
+global.kidy = 0;&#13;
+global.flagx = 0;&#13;
+global.flagy = 0;&#13;
+&#13;
+//Map editing/drawing space offset&#13;
+global.mcx = 0;&#13;
+global.mcy = 0;&#13;
+global.mdx = 0;&#13;
+global.mdy = 0;&#13;
+global.mex = 0;&#13;
+global.mey = 0;&#13;
+global.mdrg = 0;&#13;
+&#13;
+//Valid map editing space&#13;
+global.mvx1 = 0;&#13;
+global.mvy1 = 16;&#13;
+global.mvx2 = room_width - 32;&#13;
+global.mvy2 = room_height - 16;&#13;
+&#13;
+global.zoom = 16;</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+  </events>
+  <PhysicsObject>0</PhysicsObject>
+  <PhysicsObjectSensor>0</PhysicsObjectSensor>
+  <PhysicsObjectShape>0</PhysicsObjectShape>
+  <PhysicsObjectDensity>0.5</PhysicsObjectDensity>
+  <PhysicsObjectRestitution>0.1</PhysicsObjectRestitution>
+  <PhysicsObjectGroup>0</PhysicsObjectGroup>
+  <PhysicsObjectLinearDamping>0.1</PhysicsObjectLinearDamping>
+  <PhysicsObjectAngularDamping>0.1</PhysicsObjectAngularDamping>
+  <PhysicsObjectFriction>0.2</PhysicsObjectFriction>
+  <PhysicsObjectAwake>-1</PhysicsObjectAwake>
+  <PhysicsObjectKinematic>0</PhysicsObjectKinematic>
+  <PhysicsShapePoints/>
+</object>

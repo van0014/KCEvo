@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<object>
+  <spriteName>&lt;undefined&gt;</spriteName>
+  <solid>0</solid>
+  <visible>-1</visible>
+  <depth>0</depth>
+  <persistent>0</persistent>
+  <maskName>&lt;undefined&gt;</maskName>
+  <parentName>&lt;undefined&gt;</parentName>
+  <events>
+    <event enumb="0" eventtype="0">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <useapplyto>-1</useapplyto>
+        <isquestion>0</isquestion>
+        <exetype>2</exetype>
+        <functionname/>
+        <codestring/>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>//This create event runs every time the window is resized. Take care how code is managed here&#13;
+&#13;
+//Check if the program was just started (Loading from parameter_string(1) should only happen once). parameter_string(1): (drop map onto .exe, or double-click)&#13;
+if (global.gstart == 1)&#13;
+{&#13;
+	//Load the map, but don't show any warning messages. Simply abort loading if there's errors. parameter_string(1) &#13;
+	global.gstart = 0;&#13;
+	kc_load(parameter_string(1),0);&#13;
+}&#13;
+//else&#13;
+{&#13;
+//Load map. On game start (in obj_setres), global.file = parameter_string(1) &#13;
+//kc_load(global.file,0);&#13;
+}&#13;
+&#13;
+//Set window caption&#13;
+room_caption = "KCEvo";&#13;
+if (file_exists(global.file)) room_caption += " - " + filename_name(global.file) + global.sstr;&#13;
+&#13;
+//Update valid map editing space&#13;
+global.mvx2 = room_width - 32;&#13;
+global.mvy2 = room_height - 16;</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event enumb="2" eventtype="3">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <useapplyto>-1</useapplyto>
+        <isquestion>0</isquestion>
+        <exetype>2</exetype>
+        <functionname/>
+        <codestring/>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>//Check for Ctrl key combinations&#13;
+if (keyboard_check(vk_control))&#13;
+{&#13;
+	if (keyboard_check_pressed(ord("O")))&#13;
+	{&#13;
+	//Ask for a map to load&#13;
+	kc_get_file();&#13;
+	}&#13;
+}&#13;
+&#13;
+//Zoom. Multiple of 2. A precision problem (float) means zooming isn't consistent in Enigma. * Cast to int or other data type&#13;
+if (mouse_wheel_up())&#13;
+{&#13;
+	global.zoom += (int)divz(global.zoom,4);&#13;
+	global.zoom = min(global.zoom,512);&#13;
+}&#13;
+&#13;
+if (mouse_wheel_down())&#13;
+{&#13;
+	global.zoom -= (int)divz(global.zoom,4);&#13;
+	global.zoom = max(global.zoom,4);&#13;
+}&#13;
+&#13;
+//Check if the window was resized&#13;
+if (max(window_get_width(),0) != global.wnwid) or (max(window_get_height(),0) != global.wnhgt)&#13;
+{&#13;
+	//Get the new size, and change room 'setres' to the new size. Setres then reads it's own new size, and then sets rm_main's size&#13;
+	global.wnwid = max(window_get_width(),96);&#13;
+	global.wnhgt = max(window_get_height(),64);&#13;
+	room_set_width(setres,global.wnwid);&#13;
+	room_set_height(setres,global.wnhgt);&#13;
+	room_goto(setres);&#13;
+}</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event enumb="0" eventtype="3">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <useapplyto>-1</useapplyto>
+        <isquestion>0</isquestion>
+        <exetype>2</exetype>
+        <functionname/>
+        <codestring/>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>//Check if mouse is in valid map editing area&#13;
+if (in_area(global.mvx1,global.mvy1,global.mvx2,global.mvy2,mouse_x,mouse_y))&#13;
+{&#13;
+	//Check for mouse right click, so we can drag the map around&#13;
+	if (mouse_check_button_pressed(mb_right)) and (global.mdrg != 1)&#13;
+	{&#13;
+		global.mdrg = 1;&#13;
+		global.mex = mouse_x;&#13;
+		global.mey = mouse_y;&#13;
+		global.mcx = global.mdx + (mouse_x - global.mvx1);&#13;
+		global.mcy = global.mdy + (mouse_y - global.mvy1);&#13;
+	}&#13;
+	&#13;
+	//If right click was detected, move the map with the mouse, until it's released.&#13;
+	if (global.mdrg == 1)&#13;
+	{&#13;
+		if (mouse_check_button(mb_right))&#13;
+		{&#13;
+			//Remember to factor in zoom level&#13;
+			global.mdx = max(min((global.mcx - (mouse_x - global.mvx1)), (global.mx * global.zoom) - (global.mvx1 + global.mvx2)),0);&#13;
+			global.mdy = max(min((global.mcy - (mouse_y - global.mvy1)), (global.my * global.zoom) - (global.mvy1 + global.mvy2)),0);&#13;
+		}&#13;
+		else&#13;
+		{&#13;
+			//Exit map drag mode, if it's active but the mouse isn't held&#13;
+			global.mdrg = 0;&#13;
+		}&#13;
+	}&#13;
+}</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event enumb="0" eventtype="8">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <useapplyto>-1</useapplyto>
+        <isquestion>0</isquestion>
+        <exetype>2</exetype>
+        <functionname/>
+        <codestring/>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>//Draw tiles, making sure the sprite exists&#13;
+if (sprite_exists(global.spr_lvl)) and (global.spr_lvl != 0)&#13;
+{&#13;
+	//Show part of the map, allowing space for UI elements. Also, zoom is factored in here&#13;
+	edgeX = min((global.mx * global.zoom) - (global.mdx), (global.mvx2 - global.mvx1) * divz(16,global.zoom));&#13;
+	edgeY = min((global.my * global.zoom) - (global.mdy), (global.mvy2 - global.mvy1) * divz(16,global.zoom));&#13;
+	draw_sprite_part_ext(global.spr_lvl,0,global.mdx,global.mdy,edgeX,edgeY,global.mvx1,global.mvy1,divz(global.zoom,16),divz(global.zoom,16),c_white,1);&#13;
+&#13;
+	draw_set_blend_mode_ext(10,1);&#13;
+	draw_set_color(c_white);&#13;
+	&#13;
+	//Do some math to find out where the cursor should be drawn&#13;
+	mpox = (global.mdx mod global.zoom);&#13;
+	mpoy = (global.mdy mod global.zoom);&#13;
+	&#13;
+	msnx = (mouse_x - global.mvx1) mod global.zoom;&#13;
+	msny = (mouse_y - global.mvy1) mod global.zoom;&#13;
+	msox = (mouse_x - global.mvx1) - msnx;&#13;
+	msoy = (mouse_y - global.mvy1) - msny;&#13;
+	msx = max(min(msox, min(global.mx*global.zoom,(global.mvx2 - global.mvx1) * divz(16,global.zoom)) - (msnx), ((global.mx * global.zoom) - global.mdx) - msnx), 0);&#13;
+	msy = max(min(msoy, min(global.my*global.zoom,(global.mvy2 - global.mvy1) * divz(16,global.zoom)) - (msny), ((global.my * global.zoom) - global.mdy) - msny), 0);&#13;
+	draw_rectangle(msx + global.mvx1,msy + global.mvy1,msx + global.mvx1 + (global.zoom - mpox),msy + global.mvy1 + (global.zoom - mpoy),1);&#13;
+	draw_set_blend_mode(bm_normal);&#13;
+	&#13;
+	//Indicate where map dragging is centered on&#13;
+	if (global.mdrg == 1)&#13;
+	{&#13;
+		draw_set_color(c_lime);&#13;
+		draw_circle(global.mex,global.mey,16,1);&#13;
+		draw_set_color(c_yellow);&#13;
+		draw_circle(global.mex,global.mey,15,1);&#13;
+		draw_set_color(c_navy);&#13;
+		draw_circle(global.mex,global.mey,14,1);&#13;
+		&#13;
+		//draw_circle_color(mouse_x,mouse_y,12,c_yellow,c_lime,1);&#13;
+		//draw_circle_color(mouse_x,mouse_y,14,c_yellow,c_lime,1);&#13;
+		draw_circle_color(mouse_x,mouse_y,16,c_yellow,c_lime,1);&#13;
+		&#13;
+		draw_line_width_color(global.mex,global.mey,mouse_x,mouse_y,4,c_lime,c_yellow);&#13;
+	}&#13;
+	//draw_text(0,0,"Zoom: "+string(global.zoom));&#13;
+}</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+  </events>
+  <PhysicsObject>0</PhysicsObject>
+  <PhysicsObjectSensor>0</PhysicsObjectSensor>
+  <PhysicsObjectShape>0</PhysicsObjectShape>
+  <PhysicsObjectDensity>0.5</PhysicsObjectDensity>
+  <PhysicsObjectRestitution>0.1</PhysicsObjectRestitution>
+  <PhysicsObjectGroup>0</PhysicsObjectGroup>
+  <PhysicsObjectLinearDamping>0.1</PhysicsObjectLinearDamping>
+  <PhysicsObjectAngularDamping>0.1</PhysicsObjectAngularDamping>
+  <PhysicsObjectFriction>0.2</PhysicsObjectFriction>
+  <PhysicsObjectAwake>-1</PhysicsObjectAwake>
+  <PhysicsObjectKinematic>0</PhysicsObjectKinematic>
+  <PhysicsShapePoints/>
+</object>
