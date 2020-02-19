@@ -18,11 +18,11 @@
     <option_resolution>0</option_resolution>
     <option_changeresolution>false</option_changeresolution>
     <option_priority>0</option_priority>
-    <option_closeesc>true</option_closeesc>
+    <option_closeesc>false</option_closeesc>
     <option_interpolate>true</option_interpolate>
     <option_scale>0</option_scale>
-    <option_closeesc>true</option_closeesc>
-    <option_lastchanged>43879.391504085645</option_lastchanged>
+    <option_closeesc>false</option_closeesc>
+    <option_lastchanged>43880.52025461806</option_lastchanged>
     <option_gameid>20181210</option_gameid>
     <option_gameguid>{DD1826A2-5380-5A45-4F1D-D3F58479B062}</option_gameguid>
     <option_author>Daniel van Rijthoven</option_author>

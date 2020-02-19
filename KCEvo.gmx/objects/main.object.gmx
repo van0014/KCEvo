@@ -30,6 +30,8 @@
 //Check if the program was just started (Loading from parameter_string(1) should only happen once). parameter_string(1): (drop map onto .exe, or double-click)&#13;
 if (global.gstart == 1)&#13;
 {&#13;
+	//Window fade in&#13;
+	alarm[0] = 1;&#13;
 	//Load the map, but don't show any warning messages. Simply abort loading if there's errors. parameter_string(1) &#13;
 	global.gstart = 0;&#13;
 	kc_load(parameter_string(1),0);&#13;
@@ -46,7 +48,11 @@ if (file_exists(global.file)) room_caption += " - " + filename_name(global.file)
 &#13;
 //Update valid map editing space&#13;
 global.mvx2 = room_width - 32;&#13;
-global.mvy2 = room_height - 16;</string>
+global.mvy2 = room_height - 16;&#13;
+&#13;
+mina = 0;&#13;
+mnax = 0;&#13;
+mnay = 0;</string>
           </argument>
         </arguments>
       </action>
@@ -122,17 +128,42 @@ if (max(window_get_width(),0) != global.wnwid) or (max(window_get_height(),0) !=
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>//Check if mouse is in valid map editing area&#13;
-if (in_area(global.mvx1,global.mvy1,global.mvx2,global.mvy2,mouse_x,mouse_y))&#13;
+            <string>//Window open fade&#13;
+if (global.Salpha &lt; 1)&#13;
 {&#13;
+	global.Salpha += 0.1&#13;
+	window_set_alpha(global.Salpha);&#13;
+}&#13;
+&#13;
+//Window close fade&#13;
+if (global.Ealpha &gt; 0)&#13;
+{&#13;
+	global.Ealpha -= 0.1&#13;
+	window_set_alpha(global.Ealpha);&#13;
+	if (global.Ealpha &lt;= 0)&#13;
+	{&#13;
+		game_end();&#13;
+	}&#13;
+}&#13;
+&#13;
+edgeX = min((global.mx * global.zoom) - (global.mdx), (global.mvx2 - global.mvx1) * divz(global.zoom,16));&#13;
+edgeY = min((global.my * global.zoom) - (global.mdy), (global.mvy2 - global.mvy1) * divz(global.zoom,16));&#13;
+	&#13;
+//Check if mouse is in valid map editing area&#13;
+if (in_area(global.mvx1,global.mvy1,edgeX,edgeY,mouse_x,mouse_y))&#13;
+{&#13;
+	mina = 1;&#13;
+	&#13;
 	//Check for mouse right click, so we can drag the map around&#13;
 	if (mouse_check_button_pressed(mb_right)) and (global.mdrg != 1)&#13;
 	{&#13;
 		global.mdrg = 1;&#13;
 		global.mex = mouse_x;&#13;
 		global.mey = mouse_y;&#13;
-		global.mcx = global.mdx + (mouse_x - global.mvx1);&#13;
-		global.mcy = global.mdy + (mouse_y - global.mvy1);&#13;
+		global.mcx = global.mdx + ((divz(mouse_x,global.zoom)*16) - global.mvx1);&#13;
+		global.mcy = global.mdy + ((divz(mouse_y,global.zoom)*16) - global.mvy1);&#13;
+		mnax = 0;&#13;
+		mnay = 0;&#13;
 	}&#13;
 	&#13;
 	//If right click was detected, move the map with the mouse, until it's released.&#13;
@@ -140,9 +171,15 @@ if (in_area(global.mvx1,global.mvy1,global.mvx2,global.mvy2,mouse_x,mouse_y))&#1
 	{&#13;
 		if (mouse_check_button(mb_right))&#13;
 		{&#13;
-			//Remember to factor in zoom level&#13;
-			global.mdx = max(min((global.mcx - (mouse_x - global.mvx1)), (global.mx * global.zoom) - (global.mvx1 + global.mvx2)),0);&#13;
-			global.mdy = max(min((global.mcy - (mouse_y - global.mvy1)), (global.my * global.zoom) - (global.mvy1 + global.mvy2)),0);&#13;
+			//Factor in zoom level&#13;
+			//global.mdx = max(min((global.mcx - (mouse_x - global.mvx1)), (global.mx * global.zoom) - (global.mvx1 + global.mvx2)),0);&#13;
+			//global.mdy = max(min((global.mcy - (mouse_y - global.mvy1)), (global.my * global.zoom) - (global.mvy1 + global.mvy2)),0);&#13;
+			//Fixed map drag speed&#13;
+			global.mdx = max(min((global.mcx - ((divz(mouse_x,global.zoom)*16) - global.mvx1)), (global.mx * global.zoom) - (global.mvx1 + global.mvx2)),0);&#13;
+			global.mdy = max(min((global.mcy - ((divz(mouse_y,global.zoom)*16) - global.mvy1)), (global.my * global.zoom) - (global.mvy1 + global.mvy2)),0);&#13;
+			//Track mouse if it's inside the map area, used as x,y for the map drag circle overlay&#13;
+			mnax = mouse_x;&#13;
+			mnay = mouse_y;&#13;
 		}&#13;
 		else&#13;
 		{&#13;
@@ -150,7 +187,47 @@ if (in_area(global.mvx1,global.mvy1,global.mvx2,global.mvy2,mouse_x,mouse_y))&#1
 			global.mdrg = 0;&#13;
 		}&#13;
 	}&#13;
+}&#13;
+else&#13;
+{&#13;
+	mina = 0;&#13;
+}&#13;
+&#13;
+if !(mouse_check_button(mb_right))&#13;
+{&#13;
+	global.mdrg = 0;&#13;
 }</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event enumb="30" eventtype="7">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <useapplyto>-1</useapplyto>
+        <isquestion>0</isquestion>
+        <exetype>2</exetype>
+        <functionname/>
+        <codestring/>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>//Handle unsaved changes&#13;
+if (global.sstr == "*")&#13;
+{&#13;
+	if (show_question("The map hasn't been saved yet. Do you want to save your changes?"))&#13;
+	{&#13;
+		&#13;
+	}&#13;
+}&#13;
+&#13;
+end_program();</string>
           </argument>
         </arguments>
       </action>
@@ -178,6 +255,7 @@ if (sprite_exists(global.spr_lvl)) and (global.spr_lvl != 0)&#13;
 	//Show part of the map, allowing space for UI elements. Also, zoom is factored in here&#13;
 	edgeX = min((global.mx * global.zoom) - (global.mdx), (global.mvx2 - global.mvx1) * divz(16,global.zoom));&#13;
 	edgeY = min((global.my * global.zoom) - (global.mdy), (global.mvy2 - global.mvy1) * divz(16,global.zoom));&#13;
+&#13;
 	draw_sprite_part_ext(global.spr_lvl,0,global.mdx,global.mdy,edgeX,edgeY,global.mvx1,global.mvy1,divz(global.zoom,16),divz(global.zoom,16),c_white,1);&#13;
 &#13;
 	draw_set_blend_mode_ext(10,1);&#13;
@@ -189,6 +267,17 @@ if (sprite_exists(global.spr_lvl)) and (global.spr_lvl != 0)&#13;
 	&#13;
 	msnx = (mouse_x - global.mvx1) mod global.zoom;&#13;
 	msny = (mouse_y - global.mvy1) mod global.zoom;&#13;
+	&#13;
+	//If the map is moved, and the selectable tile area in the top left corner is smaller than the cursor size, force the cursor to move, so it can fill a full tile space&#13;
+	if (msnx &lt; global.zoom)&#13;
+	{&#13;
+		msnx += global.zoom;&#13;
+	}&#13;
+	if (msny &lt; global.zoom)&#13;
+	{&#13;
+		msny += global.zoom;&#13;
+	}&#13;
+	&#13;
 	msox = (mouse_x - global.mvx1) - msnx;&#13;
 	msoy = (mouse_y - global.mvy1) - msny;&#13;
 	msx = max(min(msox, min(global.mx*global.zoom,(global.mvx2 - global.mvx1) * divz(16,global.zoom)) - (msnx), ((global.mx * global.zoom) - global.mdx) - msnx), 0);&#13;
@@ -199,21 +288,46 @@ if (sprite_exists(global.spr_lvl)) and (global.spr_lvl != 0)&#13;
 	//Indicate where map dragging is centered on&#13;
 	if (global.mdrg == 1)&#13;
 	{&#13;
-		draw_set_color(c_lime);&#13;
-		draw_circle(global.mex,global.mey,16,1);&#13;
-		draw_set_color(c_yellow);&#13;
-		draw_circle(global.mex,global.mey,15,1);&#13;
-		draw_set_color(c_navy);&#13;
-		draw_circle(global.mex,global.mey,14,1);&#13;
-		&#13;
+		draw_circle_color(global.mex,global.mey,4,c_lime,c_yellow,1);&#13;
 		//draw_circle_color(mouse_x,mouse_y,12,c_yellow,c_lime,1);&#13;
 		//draw_circle_color(mouse_x,mouse_y,14,c_yellow,c_lime,1);&#13;
-		draw_circle_color(mouse_x,mouse_y,16,c_yellow,c_lime,1);&#13;
+		draw_circle_color(mnax,mnay,16,c_yellow,c_lime,1);&#13;
 		&#13;
-		draw_line_width_color(global.mex,global.mey,mouse_x,mouse_y,4,c_lime,c_yellow);&#13;
+		draw_line_width_color(global.mex,global.mey,mnax,mnay,4,c_lime,c_yellow);&#13;
 	}&#13;
 	//draw_text(0,0,"Zoom: "+string(global.zoom));&#13;
 }</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event enumb="27" eventtype="9">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <useapplyto>-1</useapplyto>
+        <isquestion>0</isquestion>
+        <exetype>2</exetype>
+        <functionname/>
+        <codestring/>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>//Handle unsaved changes&#13;
+if (global.sstr == "*")&#13;
+{&#13;
+	if (show_question("The map hasn't been saved yet. Do you want to save your changes?"))&#13;
+	{&#13;
+		&#13;
+	}&#13;
+}&#13;
+&#13;
+end_program();</string>
           </argument>
         </arguments>
       </action>

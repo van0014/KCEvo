@@ -106,6 +106,9 @@ room_goto(rm_main);</string>
 //Enigma doesn't have this variable. GM has it as read-only&#13;
 gamemaker_version = 0;&#13;
 global.gstart = 1;&#13;
+window_set_alpha(0);&#13;
+global.Salpha = 0;&#13;
+global.Ealpha = 0;&#13;
 //Initial window size&#13;
 global.wnwid = divz(display_get_width(),4)*2;&#13;
 global.wnhgt = divz(display_get_height(),3)*2;&#13;
@@ -116,6 +119,7 @@ global.kcm = ds_list_create();&#13;
 global.level = ds_grid_create(1,1);&#13;
 global.spr_tile = spr_none;&#13;
 global.spr_lvl = 0;&#13;
+global.spr_contrast = -1;&#13;
 global.sstr = "";//If map has been changed, this should equal "*"&#13;
 &#13;
 //Map variables&#13;

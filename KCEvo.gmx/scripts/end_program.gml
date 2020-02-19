@@ -1,0 +1,1 @@
+global.Ealpha = 1;

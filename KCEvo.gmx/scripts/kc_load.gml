@@ -150,11 +150,43 @@ switch ((global.thmf & $F))
 	}
 
 //Make a surface, to save as a sprite
+tlc = surface_create((global.mx * 16),(global.my * 16));
+//Change drawing target. No more drawing to the screen for this part. It happens in video memory instead
+surface_set_target(tlc);
+//Clear the surface to transparentwhite
+draw_clear_alpha(c_white,0);
+//Load tiles into RAM, in a ds_grid that's easy to manipulate arrays with
+for (vy = 0; vy < global.my; vy += 2)
+{
+	for (vx = 0; vx < global.mx; vx += 2)
+	{
+		//Draw background contrast, for easyer tile alignment
+		draw_set_color(c_white);
+		//TL
+		draw_rectangle(vx * 16,vy * 16,(vx * 16) + 16,(vy * 16) + 16,0);
+		//Br
+		draw_rectangle((vx * 16) + 16,(vy * 16) + 16,(vx * 16) + 32,(vy * 16) + 32,0);
+		draw_set_color(make_color_rgb(245,245,245));
+		//Tr
+		draw_rectangle((vx * 16) + 16,vy * 16,(vx * 16) + 32,(vy * 16) + 16,0);
+		//Bl
+		draw_rectangle((vx * 16),(vy * 16) + 16,(vx * 16) + 16,(vy * 16) + 32,0);
+	}
+}
+
+//Make a surface, to save as a sprite
 tls = surface_create((global.mx * 16),(global.my * 16));
+
 //Change drawing target. No more drawing to the screen for this part. It happens in video memory instead
 surface_set_target(tls);
 //Clear the surface to transparentwhite
 draw_clear_alpha(c_white,0);
+
+if (surface_exists(tlc))
+{
+	draw_surface(tlc,0,0);
+}
+
 //Load tiles into RAM, in a ds_grid that's easy to manipulate arrays with
 for (vy = 0; vy < global.my; vy += 1)
 {
@@ -164,11 +196,24 @@ for (vy = 0; vy < global.my; vy += 1)
 		grx = ds_list_find_value(global.kcm,addr_tile + (vx + (global.mx * vy))) & $F;
 		gry = (ds_list_find_value(global.kcm,addr_tile + (vx + (global.mx * vy))) & $F0) >> 4;
 		//Draw background contrast, for easyer tile alignment
-		draw_sprite_part_ext(spr_slvl,0,((grx mod 2) * 16),((gry mod 2) * 16),16,16,(vx * 16),(vy * 16),1,1,c_white,1);
+		//draw_sprite_part_ext(spr_slvl,0,((vx mod 2) * 16),((vy mod 2) * 16),16,16,(vx * 16),(vy * 16),1,1,c_white,1);
 		//Draw the right part of the tileset, in the right place. Drawing target is on a surface, so you can't see it yet
 		draw_sprite_part_ext(global.spr_tile,0,(grx * 16),(gry * 16),16,16,(vx * 16),(vy * 16),1,1,c_white,1);
 	}
 }
+
+//Restore the drawing target, so we can draw to the screen and see what's going on again
+surface_reset_target();
+
+//Try to prevent a memory leak, and also try not to delete spr_none
+if (sprite_exists(global.spr_lvl)) and (global.spr_lvl != spr_none)//0)
+{
+	sprite_delete(global.spr_lvl); 
+	//global.lvl = 0;
+}
+
+//Make the sprite
+global.spr_lvl = sprite_create_from_surface(tls,0,0,(global.mx*16),(global.my*16),0,0,0,0);
 
 //Check if block address seems valid, based on current position in file. If there's a potential error with it, ask the question whether to load the map anyway
 if ((addr_tile + (global.mx * global.my)) != addr_block) 
@@ -187,19 +232,6 @@ if ((addr_tile + (global.mx * global.my)) != addr_block)
 		}
 	}
 }
-
-//Restore the drawing target, so we can draw to the screen and see what's going on again
-surface_reset_target();
-
-//Try to prevent a memory leak, and also try not to delete spr_none
-if (sprite_exists(global.spr_lvl)) and (global.spr_lvl != spr_none)//0)
-{
-	sprite_delete(global.spr_lvl); 
-	//global.lvl = 0;
-}
-
-//Make the sprite
-global.spr_lvl = sprite_create_from_surface(tls,0,0,(global.mx*16),(global.my*16),0,0,0,0);
 
 //Window caption
 room_caption = "KCEvo - " + filename_name(argument0);
